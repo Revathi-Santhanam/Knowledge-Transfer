@@ -1,6 +1,10 @@
+-- Table and Database creation
+-------------------------------
+
 CREATE DATABASE IF NOT EXISTS sample;
 
 -- To find number of procedures
+
 SHOW PROCEDURE STATUS WHERE db = 'sample';
 
 USE sample;
@@ -35,6 +39,8 @@ CREATE TABLE IF NOT EXISTS jobs (
     min_salary DECIMAL(6,0),
     max_salary DECIMAL(6,0)
 );
+
+------------------------------------------------------------------------------------------------------------------
 
 -- creating foreign key
 ALTER TABLE employees ADD CONSTRAINT fk_dept FOREIGN KEY(department_id) REFERENCES departments(department_id);
@@ -75,8 +81,11 @@ VALUES
 
 SELECT * FROM employees;
 
+----------------------------------------------------------------------------------------------------------------------------------
+-- 1.Write a PL/SQL procedure to display the total number of employees hired each year between 1985 and 2000. 
+--Return the result in tabular format.
+==============================================================================================================================
 
--- 1.Write a PL/SQL procedure to display the total number of employees hired each year between 1985 and 2000. Return the result in tabular format.
 
 DELIMITER &&
 
@@ -126,7 +135,11 @@ DELIMITER ;
 
 CALL TotalEmployeesHiredPerYear();
 
--- 2.Write a PL/SQL procedure to count number of employees in department 4 and check whether this department have any vacancies or not. There are 40 vacancies in this department.
+--------------------------------------------------------------------------------------------------------------------------------
+
+-- 2.Write a PL/SQL procedure to count number of employees in department 4 and check whether this department have any 
+--vacancies or not. There are 40 vacancies in this department.
+=================================================================================================================================
 
 DELIMITER &&
 
@@ -158,8 +171,10 @@ DELIMITER ;
 
 CALL CheckDepartmentVacancies();
 
+---------------------------------------------------------------------------------------------------------------------------------
 --3.Write a procedure to update the salary of a specific employee by 8% if the salary exceeds the mid range of the salary against this job and update up to mid range 
 --if the salary is less than the mid range of the salary, and display a suitable message.
+==================================================================================================================================
 
 DELIMITER &&
 
