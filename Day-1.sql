@@ -28,24 +28,33 @@ manager_id			INT,
 location_id			INT
 );
 
+-- creating jobs table
+CREATE TABLE IF NOT EXISTS jobs (
+    job_id VARCHAR(10) PRIMARY KEY,
+    job_title VARCHAR(35),
+    min_salary DECIMAL(6,0),
+    max_salary DECIMAL(6,0)
+);
+
 -- creating foreign key
 ALTER TABLE employees ADD CONSTRAINT fk_dept FOREIGN KEY(department_id) REFERENCES departments(department_id);
+ALTER TABLE employees ADD CONSTRAINT fk_job FOREIGN KEY(job_id) REFERENCES jobs(job_id);
 
 
 
 -- INSERT statements for employees table
 INSERT INTO employees VALUES
-(100, 'John', 'Doe', 'john.doe@gmail.com', '7876787678', '1986-01-01', 'Manager', 50000, 0.05, NULL, 4),
-(101, 'Jane', 'Smith', 'jane.smith@gmail.com', '9898898987', '2002-02-01', 'Developer', 40000, 0.03, 100, 4),
-(102, 'David', 'Johnson', 'david.johnson@gmail.com', '6565676757', '1997-03-15', 'Analyst', 35000, 0.02, 100, 4),
-(103, 'George', 'David', 'david.george@gmail.com', '7878767689', '2000-03-15', 'Manager', 45000, 0.05, NULL, 1),
-(104, 'Adan', 'Smith', 'jane.adan@gmail.com', '8787676768', '1995-03-15', 'Supervisor', 35000, 0.03, 103, 1),
-(105, 'Claire', 'Joe', 'joe.claire@gmail.com', '6789876589', '1988-03-15', 'Associate', 30000, 0.02, 103, 1),
-(106, 'Ray', 'Chan', 'chan.ray@gmail.com', '9875676787', '1900-03-15', 'Manager', 45000, 0.05, NULL, 1),
-(107, 'Harry', 'Haran', 'haran.harry@gmail.com', '6776678987', '1980-03-15', 'Accountant', 35000, 0.03, 106, 1),
-(108, 'Anisha', 'Yash', 'yash.anisha@gmail.com', '9898987878', '1990-03-15', 'Clerk', 30000, 0.02, 106, 1),
-(109, 'Kiran', 'Fred', 'fred.kiran@gmail.com', '9898987878', '1990-03-15', 'Manager', 40000, 0.05, NULL, 1),
-(110, 'Anisha', 'Yash', 'yash.anisha@gmail.com', '9898987878', '1990-03-15', 'Assistant', 30000, 0.03, 109, 1);
+(100, 'John', 'Doe', 'john.doe@gmail.com', '7876787678', '1986-01-01', '1', 50000, 0.05, NULL, 4),
+(101, 'Jane', 'Smith', 'jane.smith@gmail.com', '9898898987', '2002-02-01', '2', 40000, 0.03, 100, 4),
+(102, 'David', 'Johnson', 'david.johnson@gmail.com', '6565676757', '1997-03-15', '3', 35000, 0.02, 100, 4),
+(103, 'George', 'David', 'david.george@gmail.com', '7878767689', '2000-03-15', '1', 45000, 0.05, NULL, 1),
+(104, 'Adan', 'Smith', 'jane.adan@gmail.com', '8787676768', '1995-03-15', '4', 35000, 0.03, 103, 1),
+(105, 'Claire', 'Joe', 'joe.claire@gmail.com', '6789876589', '1988-03-15', '3', 30000, 0.02, 103, 1),
+(106, 'Ray', 'Chan', 'chan.ray@gmail.com', '9875676787', '1900-03-15', '1', 45000, 0.05, NULL, 1),
+(107, 'Harry', 'Haran', 'haran.harry@gmail.com', '6776678987', '1980-03-15','5' , 35000, 0.03, 106, 1),
+(108, 'Anisha', 'Yash', 'yash.anisha@gmail.com', '9898987878', '1990-03-15', '6', 30000, 0.02, 106, 1),
+(109, 'Kiran', 'Fred', 'fred.kiran@gmail.com', '9898987878', '1990-03-15', '1', 40000, 0.05, NULL, 1),
+(110, 'Anisha', 'Yash', 'yash.anisha@gmail.com', '9898987878', '1990-03-15', '7', 30000, 0.03, 109, 1);
 
 -- INSERT statements for departments table
 INSERT INTO departments VALUES
@@ -53,6 +62,16 @@ INSERT INTO departments VALUES
 (2, 'Finance', 106, 2),
 (3, 'Human Resources', 109, 3),
 (4, 'IT', 100, 4);
+
+INSERT INTO jobs (job_id, job_title, min_salary, max_salary)
+VALUES
+    ('1', 'Manager', 40000, 50000),
+    ('2', 'Developer', 35000, 60000),
+    ('3', 'Analyst', 30000, 55000),
+    ('4', 'Supervisor', 35000, 55000),
+    ('5', 'Accountant', 35000, 55000),
+    ('6', 'Clerk', 30000, 55000),
+    ('7', 'Assistant', 30000, 55000);
 
 SELECT * FROM employees;
 
@@ -138,6 +157,70 @@ DELIMITER ;
 -- calling procedure 2.
 
 CALL CheckDepartmentVacancies();
+
+--3.Write a procedure to update the salary of a specific employee by 8% if the salary exceeds the mid range of the salary against this job and update up to mid range 
+--if the salary is less than the mid range of the salary, and display a suitable message.
+
+DELIMITER &&
+
+CREATE PROCEDURE UpdateEmployeeSalary()
+BEGIN
+    DECLARE emp_min_salary DECIMAL(6,0);
+    DECLARE emp_max_salary DECIMAL(6,0);
+    DECLARE emp_mid_salary DECIMAL(6,2);
+    DECLARE tmp_salary DECIMAL(6,2);
+    DECLARE tmp_emp_id INT DEFAULT 167;
+    DECLARE tmp_emp_name VARCHAR(25);
+
+    -- Get min_salary and max_salary for the job of the employee
+    SELECT min_salary, max_salary
+    INTO emp_min_salary, emp_max_salary
+    FROM jobs
+    WHERE job_id = (SELECT job_id
+                    FROM employees
+                    WHERE employee_id = tmp_emp_id);
+
+    -- Calculate mid-range
+    SET emp_mid_salary := (emp_min_salary + emp_max_salary) / 2;
+
+    -- Get salary and first_name of the given employee
+    SELECT salary, first_name
+    INTO tmp_salary, tmp_emp_name
+    FROM employees
+    WHERE employee_id = tmp_emp_id;
+
+    -- Update salary
+    IF tmp_salary < emp_mid_salary THEN
+        UPDATE employees
+        SET salary = emp_mid_salary
+        WHERE employee_id = tmp_emp_id;
+    ELSE
+        UPDATE employees
+        SET salary = salary + salary * 0.08
+        WHERE employee_id = tmp_emp_id;
+    END IF;
+
+    -- Display message
+    IF tmp_salary > emp_mid_salary THEN
+        SELECT CONCAT('The employee ', tmp_emp_name, ' ID ', CAST(tmp_emp_id AS CHAR),
+                      ' works in salary ', CAST(tmp_salary AS CHAR),
+                      ' which is higher than mid-range of salary ', CAST(emp_mid_salary AS CHAR)) AS message;
+    ELSEIF tmp_salary < emp_mid_salary THEN
+        SELECT CONCAT('The employee ', tmp_emp_name, ' ID ', CAST(tmp_emp_id AS CHAR),
+                      ' works in salary ', CAST(tmp_salary AS CHAR),
+                      ' which is lower than mid-range of salary ', CAST(emp_mid_salary AS CHAR)) AS message;
+    ELSE
+        SELECT CONCAT('The employee ', tmp_emp_name, ' ID ', CAST(tmp_emp_id AS CHAR),
+                      ' works in salary ', CAST(tmp_salary AS CHAR),
+                      ' which is equal to the mid-range of salary ', CAST(emp_mid_salary AS CHAR)) AS message;
+    END IF;
+END &&
+
+DELIMITER ;
+
+-- calling procedure 3.
+
+CALL UpdateEmployeeSalary();
 
 
 
