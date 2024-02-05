@@ -187,7 +187,7 @@ BEGIN
     DECLARE tmp_emp_id INT DEFAULT 167;
     DECLARE tmp_emp_name VARCHAR(25);
 
-    -- Get min_salary and max_salary for the job of the employee
+    -- Get min_salary and max_salary for the job of the employee 
     SELECT min_salary, max_salary
     INTO emp_min_salary, emp_max_salary
     FROM jobs
